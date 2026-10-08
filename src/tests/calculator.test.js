@@ -1,5 +1,11 @@
 const { calculate, main } = require('../calculator');
 
+const USAGE = [
+  'Usage:',
+  '  node src/calculator.js <number> <operator> <number>',
+  '  node src/calculator.js sqrt <number>',
+].join('\n');
+
 describe('calculate', () => {
   describe('addition', () => {
     test('adds the example operands', () => {
@@ -50,9 +56,38 @@ describe('calculate', () => {
     });
   });
 
+  describe('modulo', () => {
+    test('returns the remainder', () => {
+      expect(calculate(10, '%', 3)).toBe(1);
+    });
+
+    test('rejects modulo by zero', () => {
+      expect(() => calculate(10, '%', 0)).toThrow('Cannot modulo by zero.');
+    });
+  });
+
+  describe('exponentiation', () => {
+    test('raises to a power', () => {
+      expect(calculate(2, '^', 3)).toBe(8);
+      expect(calculate(2, '**', 3)).toBe(8);
+    });
+  });
+
+  describe('square root', () => {
+    test('returns the square root', () => {
+      expect(calculate(9, 'sqrt')).toBe(3);
+    });
+
+    test('rejects negative operands', () => {
+      expect(() => calculate(-1, 'sqrt')).toThrow(
+        'Cannot take square root of a negative number.',
+      );
+    });
+  });
+
   test('rejects unsupported operators', () => {
-    expect(() => calculate(2, '%', 3)).toThrow(
-      'Unsupported operator "%"',
+    expect(() => calculate(2, '&', 3)).toThrow(
+      'Unsupported operator "&"',
     );
   });
 });
@@ -69,13 +104,16 @@ describe('main', () => {
     expect(main(['1.5', '*', '2'])).toBe(3);
   });
 
+  test('supports modulo, exponentiation, and square root', () => {
+    expect(main(['10', '%', '3'])).toBe(1);
+    expect(main(['2', '^', '3'])).toBe(8);
+    expect(main(['sqrt', '9'])).toBe(3);
+  });
+
   test('rejects a missing or extra argument', () => {
-    expect(() => main(['2', '+'])).toThrow(
-      'Usage: node src/calculator.js <number> <operator> <number>',
-    );
-    expect(() => main(['2', '+', '3', 'extra'])).toThrow(
-      'Usage: node src/calculator.js <number> <operator> <number>',
-    );
+    expect(() => main(['2', '+'])).toThrow(USAGE);
+    expect(() => main(['2', '+', '3', 'extra'])).toThrow(USAGE);
+    expect(() => main(['sqrt'])).toThrow(USAGE);
   });
 
   test('rejects non-numeric operands', () => {
@@ -89,5 +127,15 @@ describe('main', () => {
 
   test('propagates division-by-zero errors', () => {
     expect(() => main(['20', '/', '0'])).toThrow('Cannot divide by zero.');
+  });
+
+  test('propagates additional operation errors', () => {
+    expect(() => main(['10', '%', '0'])).toThrow('Cannot modulo by zero.');
+    expect(() => main(['sqrt', '-1'])).toThrow(
+      'Cannot take square root of a negative number.',
+    );
+    expect(() => main(['9', 'sqrt', '0'])).toThrow(
+      'Square root operator only accepts one operand.',
+    );
   });
 });
