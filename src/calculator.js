@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
-const USAGE = 'Usage: node src/calculator.js <number> <operator> <number>';
+const USAGE = [
+  'Usage:',
+  '  node src/calculator.js <number> <operator> <number>',
+  '  node src/calculator.js sqrt <number>',
+].join('\n');
 
 function calculate(left, operator, right) {
   switch (operator) {
@@ -22,8 +26,29 @@ function calculate(left, operator, right) {
         throw new Error('Cannot divide by zero.');
       }
       return left / right;
+    // Modulo
+    case '%':
+      if (right === 0) {
+        throw new Error('Cannot modulo by zero.');
+      }
+      return left % right;
+    // Exponentiation
+    case '^':
+    case '**':
+      return left ** right;
+    // Square Root
+    case 'sqrt':
+      if (right !== undefined) {
+        throw new Error('Square root operator only accepts one operand.');
+      }
+      if (left < 0) {
+        throw new Error('Cannot take square root of a negative number.');
+      }
+      return Math.sqrt(left);
     default:
-      throw new Error(`Unsupported operator "${operator}". Use +, -, *, or /.`);
+      throw new Error(
+        `Unsupported operator "${operator}". Use +, -, *, /, %, ^, or sqrt.`,
+      );
   }
 }
 
@@ -38,6 +63,10 @@ function parseNumber(value, name) {
 }
 
 function main(args) {
+  if (args.length === 2 && args[0] === 'sqrt') {
+    return calculate(parseNumber(args[1], 'The operand'), 'sqrt');
+  }
+
   if (args.length !== 3) {
     throw new Error(USAGE);
   }
