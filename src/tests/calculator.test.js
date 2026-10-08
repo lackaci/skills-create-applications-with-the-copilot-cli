@@ -1,4 +1,10 @@
-const { calculate, main } = require('../calculator');
+const {
+  calculate,
+  main,
+  modulo,
+  power,
+  squareRoot,
+} = require('../calculator');
 
 describe('calculate', () => {
   describe('addition', () => {
@@ -50,9 +56,63 @@ describe('calculate', () => {
     });
   });
 
+  describe('modulo', () => {
+    test('returns the remainder from the example operation', () => {
+      expect(modulo(5, 2)).toBe(1);
+      expect(calculate(5, '%', 2)).toBe(1);
+    });
+
+    test('supports negative operands and exact divisions', () => {
+      expect(modulo(-5, 2)).toBe(-1);
+      expect(modulo(8, 2)).toBe(0);
+    });
+
+    test('rejects modulo by zero', () => {
+      expect(() => modulo(10, 0)).toThrow('Cannot calculate modulo by zero.');
+      expect(() => calculate(10, '%', 0)).toThrow(
+        'Cannot calculate modulo by zero.',
+      );
+    });
+  });
+
+  describe('power', () => {
+    test('raises the base to the exponent from the example operation', () => {
+      expect(power(2, 3)).toBe(8);
+      expect(calculate(2, '^', 3)).toBe(8);
+      expect(calculate(2, '**', 3)).toBe(8);
+    });
+
+    test('supports zero, negative, and fractional exponents', () => {
+      expect(power(5, 0)).toBe(1);
+      expect(power(2, -2)).toBe(0.25);
+      expect(power(9, 0.5)).toBe(3);
+    });
+  });
+
+  describe('square root', () => {
+    test('returns the square root from the example operation', () => {
+      expect(squareRoot(16)).toBe(4);
+      expect(main(['sqrt', '16'])).toBe(4);
+    });
+
+    test('supports zero and decimal inputs', () => {
+      expect(squareRoot(0)).toBe(0);
+      expect(squareRoot(0.25)).toBe(0.5);
+    });
+
+    test('rejects negative numbers', () => {
+      expect(() => squareRoot(-1)).toThrow(
+        'Cannot calculate the square root of a negative number.',
+      );
+      expect(() => main(['sqrt', '-1'])).toThrow(
+        'Cannot calculate the square root of a negative number.',
+      );
+    });
+  });
+
   test('rejects unsupported operators', () => {
-    expect(() => calculate(2, '%', 3)).toThrow(
-      'Unsupported operator "%"',
+    expect(() => calculate(2, '&', 3)).toThrow(
+      'Unsupported operator "&"',
     );
   });
 });
@@ -63,6 +123,18 @@ describe('main', () => {
     expect(main(['10', '-', '4'])).toBe(6);
     expect(main(['45', '*', '2'])).toBe(90);
     expect(main(['20', '/', '5'])).toBe(4);
+    expect(main(['10', '%', '3'])).toBe(1);
+    expect(main(['2', '^', '3'])).toBe(8);
+  });
+
+  test('parses square root CLI arguments', () => {
+    expect(main(['sqrt', '16'])).toBe(4);
+  });
+
+  test('rejects a non-numeric square root operand', () => {
+    expect(() => main(['sqrt', 'sixteen'])).toThrow(
+      'The operand must be a finite number.',
+    );
   });
 
   test('accepts decimal operands', () => {
@@ -74,7 +146,7 @@ describe('main', () => {
       'Usage: node src/calculator.js <number> <operator> <number>',
     );
     expect(() => main(['2', '+', '3', 'extra'])).toThrow(
-      'Usage: node src/calculator.js <number> <operator> <number>',
+      'Usage: node src/calculator.js <number> <operator> <number> | sqrt <number>',
     );
   });
 
